@@ -1,0 +1,46 @@
+# Changes I Made to Parser: 
+- Scopes, except global scope, may now have non declaration statement and declaration statement interleaved (based on project 2 demo test case)
+- Statement with only expr is erased (based on project 2 demo test case)
+- Now cannot declare function also in begin end block
+- If the syntax doesnt encounter any error, and this specific pattern is to be used inside project 3, only then code is generated, with functions in codeMakerAPI
+- In put, as soon as it reads PUT token, I add midrule to do the preparation of printing (getstatic)
+- add name checking, if there is two dot in the filename, then fails
+- minor modification: canStoreDefaultValue is erased, it is useless
+- add checker whether variable is global or local
+- isFunc is changed to the following: if a sentence is only expression, but isFunc is true (last statement is either function or procedure), it is valid, otherwise it is not
+- feature for printing put to console is removed (previously plus point feature)
+- function and procedure add another midrule before entering to the function scope (because it needs the finalized function argument/parameter list)
+- for statement add another midrule after reading the expression before the .., which makes the second expression written halt first (because it should be written in the exit part)
+- For the exit statement right hand side (ExitCondition), I add another return type int whether indicate it is expressionless (exit vs exit when ..)
+- Added midrule for variable and constant assignment, to give sign if we are in global declaration, to refrain expr on rhs written to program
+- Added midrule after else, furthermore I realize that my rule is ambiguous for ELSE IfConstruct and ELSE IfAllStatements, which can be replaced to IfAllStatements only because IfConstruct is contained inside it
+- The parameter or argument listing is changed from right recursive to left recursive, so that the local number 0 is started from the left
+- I found a bug in my project 2 if two statement are aligned altogether in the following pattern:
+    var s:int
+    s:=20
+  By the time it reads the second statement, it will think the s not exist, due to by the time the second s is read, the token for var s:int has not been evaluated,
+  so I change my scope checker a bit inside yacc, that is if a scope indeed does not exist, it will try to search once more with variable name
+- I made a feature that disable to add any function or procedure with the name main
+
+#Changes in commonDataStructure
+- symbolTableStoreValue flag, putCanPrintExpression and getCanScanfIdentifier are turned off (previously plus point feature)
+- I add variable called errorExist, it indicates whether there is error or not during parsing, if error encounter, this variable will stop all code generation
+- I add variable called writeCommentToJasm, it indicates whether to write comment to Jasm (but javaa is known to have bug when reading comment /* 12 / 5 */)
+
+#Changes I made into SymbolTable:
+- I add another entry called localVariableNumber in EntryAttributes, every local variable will save this value on symbol table to know what is the number it is mapped to in java virtual machine. If entry is not local variable, it is set to -1
+- The way this entry works is first variable name will be inserted to SymbolTables, then inside EntryAttributesCol it will first corresponding EntryAttribute, with localVariableNumber set to -1, then if entry is Local Variable declaration, it will modify the localVariableNumber by reading the last next number in 
+- I store in every java function scope the next local variable counter it can refer, it is called nextVariableCounter vector final element
+- when create a new symbol table, I add another feature which can differentiate the new symbol table is for inside a function/procedure or not (since it is needed to push nextVariableCounter)
+- the same is when I add when pop back the symbol table, I need to differentiate whether the removed scope is from a procedure/function, which needs to pop localVariableNumber counter
+- I add another printing feature in which it follow the print format stated in pdf, when done insertion and symbol table pop, it will print to console when global variable in commonDataStructure.cpp doInsertInfoAndDumpLastEntryDuringPopProject3 is set to 1
+
+#Changes I made into Scanner:
+- I add another macro PRINTPROGRAMTOJAVA, which prints non comment original st program into the java File as a comment
+- I need to make a new string buffer that especially to store non comment program (nonCommentBuf), because:
+    -- for comment, it might be the front part of it is a regular sentence (var a:= 10 %a comment), so everytime it enters comment (either single line or multiline), check the front if there is a non comment, if there is, then print to java with comment part deleted
+    -- for multiline comment, after it finish, it might be that there is a follow up program follow it, this way only print the back program
+    -- Hence, I add another macro LISTNONCOMMENT for writing to nonCommentBuf char
+#Changes I made into Makefile: 
+- I add another makefile command called fastDebug, which can quickly run exe of yacc (./res), with javaa, and java
+- I modify a bit my make clean to make it clean also the .class and the .jasm output 

@@ -1,0 +1,177 @@
+Handled Case:
+
+N = Not made
+M = Made
+T = TestCase exist
++ = plus point
+P = Pass
+
+Default Test Case:
+[P] example.st
+[P] HelloWorld.st
+[P] sigma.st
+[P] fib.st
+
+- Note: In the current situation for plus point, if symbol table can store value, if the storing value mode is on, it will also update the value of global scope if it is declared outside (even for if and loops, where it is not guaranteed to run)
+    So in the current situation, value will only make sense if no construct/blocks involved
+- Note: Sinced parameters is only passed by value, if passing a constant identifier, changing its value is still okay
+- Note: In Function local scope, I also pushed the function name, even if declaration is invalid, this is done to check for duplicate identifier error. But, invalid function will always not pushed to outside scope
+- Note: Since teacher's Lex example in PDF only has max length of 256 characters per line, I assume string content to also not be more than 256, since multiline string is unavailable
+
+Custom test case: For the rest of the test case spec, refer to the the specification below
+1. Function / Procedure Related:
+    a. Call
+        a. [P]: Function not exist will result fail
+        b. [P]: Error in function argument expression will fail function call
+        c. [P]: Function supports argument of int bool real or string, also array of integer, boolean, and string (in which array length should be the same with the one declared)
+        d. [P]: Function call maybe bracket with no parameters, and func with parameters
+        e. [P]: Function call can be continued with other operation (e.g. 2 + fibonacci(3))
+        f. [P+]: Calling function/procedure with no brackets will result error and print the message to the screen
+        g. [P] passing function identifer to another function parameter false
+    b. Declaration:
+        a. [P]: Identifier already exist will result fail, but the rest of the statement in the function remain evaluated
+        b. [P]: Error in function argument expression will fail function declaration
+        c. [P]: Functions supports argument of  int bool real or string, also array of integer, boolean, and string
+        d. [P]: Try bracket with no parameters, no brackets, and func with parameters
+        e. [P]: Function inside not call itself / any identifier not use this name, it will result error in function body, but function is still declared
+        f. [P]: Declaration is error, but statement outside of function call its name, it will also result an error
+        g. [P]: Function with return should result an error, function without result is also an error, in which function will not be declared
+        h. [P]: Result of function with different type, or error in expression will cause function declaration also to be invalid 
+        i. [P]: Procedure with result should be an error, in which prcedure will not be declared
+        j. [P]: Procedure can only have return but not result, Function can only have result but not return
+        k. [P]: Different ending name of function will also result an error
+        l. [P]: Function Argument may have same name with the one on global scope
+        m. [P]: Procedure may be empty, but function may not (need result statement)
+        o. [P+]: Declaring function/procedure with no backets will print to the screen and declaration fails
+2. Logical Operator OR AND NOT
+    a. [P]: Only Bool - Bool is allowed, other types is not valid
+    b. [P]: (SelfNote:) Try all operator result to be correct (TRUE AND FALSE) (TRUE OR FALSE), (NOT FALSE)
+    c. [P]: (Self note: )Try Precedence (FALSE OR TRUE AND NOT TRUE), (FALSE OR NOT FALSE AND TRUE)
+    d. [P]: Identifier exist in outside scope is still valid
+    e. [P]: Expression LHS or RHS can be Function, procedure is not due to no result value
+    f. [P]: Expression LHS or RHS can be Variable
+    g. [P]：Propagate error
+    h. [P+]: If Expression LHS or RHS can be Variable and Symbol Table can be stored, then Boolean can be evaluated (No function involved)
+    i. [P+]: If Both Expr is Const, can store value.
+    j. [P+]: If Symbol Table Store Value is on, any expression with only variable and const (no array) can store the value
+
+3. RelationalStatementChecker
+    a. [P]: Either LHS AND RHS are both Numerical, or Both String
+    b. [P]: For = and not=, can be both boolean also, other should be error (e.g. false < true)
+    c. [P]: (Self note： ) Try all combinations that resulting true and false 
+    d. [P]: (Self note: )Try Precedence, should be left to right (e.g. 10 > 9 = true not= false)
+    e. [P]: Identifier exist in outside scope is still valid
+    f. [P]: Expression LHS or RHS can be Function, procedure is not due to no result value
+    g. [P]: Expression LHS or RHS can be Variable
+    h. [P+]: If Both Expr is Const, can store value.
+    i. [P+]: If Symbol Table Store Value is on, any expression with only variable and const （no array） can store the value
+
+4. Mathematical Statement Checker
+  a. [P]: LHS and RHS are both numerical (elements can only be int or real)
+  b. [P]: Int and Int will result int, other will result real
+  c. [P]: (Self note: ) Try Precedence and Parentheses (10+2/4.0*7.0) and (2/4.0*(7.0-10))
+  d. [P]: (Self note: ) Try Unary Operator, and -- should be non assoc e.g. (10--7)
+  e. [P]: Identifier exist in outside scope is still valid
+  f. [P]: Expression LHS or RHS can be Function, procedure is not due to no result value
+  g. [P]: Expression LHS or RHS can be Variable
+  h. [P+]: Zero Division Error for remainder and division if value is const or variable(if symbol table store value is on)
+  i. [P+]: If Both Expr is Const, can store value.
+  j. [P+]: If Symbol Table Store Value is on, any expression with only variable and const (no array) can store the value
+
+5. Mix Expression check
+    a. [P] Order should be Mathematical first, then relational, then logical
+         e.g.: not 10+12*7 >= 2*5 
+
+6. Var and Const and Array Declaration
+    a. [P] Try for complete, typeless and valueless declaration for variable
+    b. [P] Try for complete, typeless declaration for const
+    c. [P] Try declaring for array, index should be ascending, and no string array type
+    c. [P] Assignment Declaration to existing identifier should be false
+    d. [P] Assignment Declaration should involve const expression (can be const variable), fail to do so (e.g. with function or non const variable) will have value failed. Test also with expressions
+    e. [P] Invalid Expression on the right should have identifier declaration to fail (has error, type different, or is array)
+    f. [T+] Array with descending index is invalid
+
+7. PutStatement:
+    a. [P] Error in expression will make put statement fails
+    b. [P+] Except put of expr void type, other will not cause error
+    c. [P+] Constant expression will be printed
+    d. [P+] If symbol table store value is on, and statement doesn't involve function / array element, will print the value
+
+8. GetStatement:
+    a. [P] Identifier not exist will cause error, in which get statement fail
+    b. [P] Identifier exist in outside scope is still valid
+    c. [P] (Self note:) make sure insertion of variable and array is entering different rule
+    d. [P] Get to function identifier, const identifier, and array identifier without square bracket is error
+    e. [P] Array Index should be integer, have no error, and is not array
+    f. [P+] If symbol table value is on and getCanScanfIdentifier also on, then scanf can be done, and value will be stored (as long as what is done inside scanf is not array element, but regular variable)
+    g. [P+] If index expression is constant (either direct value or constant variable), check for index validity (in range or not)
+
+9. AssignmentStatement
+    a. [P] Assignment with one of them is function is valid but won't save value
+    b. [P] Different element type will result error
+    c. [P] (Self note:) make sure assignment of variable and array is entering different rule, and all types are working
+    d. [P] Assignment to function identifier, const identifier, and array identifier without square bracket is false
+    e. [P] Assignment to array with square bracket should have element of same type
+    f. [P] Array Index should be integer, have no error, and is not array
+    g. [P+] Index validity checker if the index expression can be counted (is a constant expressions, variable not)
+    
+
+10. IdentifierOnRHS
+    a. [P] May be Identifier without following symbol, or Identifier (), or Identifier []. The first one may be all types, the second one can only be function, the final one can only be array. 
+    b. [P+] Identifier that is Const will pass the value to the expression. And if the index that access an array is a const (either direct value or constant variable), index validity can be checked
+    c. [P] Also, the index that access the array can be variable, or function. But, the validity of the index won't be checked
+
+11. Whole Program
+    a. [P] Program may be empty and still works
+    b. [P] DeclarationSection may not exist
+    c. [P] NonDeclarationSection may not exist
+    d. [P] NonDeclaration Followed By DeclarationSection will cause syntax error
+    e. [P] Result and return invalid in global
+    f. [P] Exit invalid in global
+
+12. Loop:
+    a. [P] Result or return kight be valid if block inside function or procedure, otherwise error
+    b. [P] may have exit, exit when should be boolean expr
+    c. [P] LoopScope May be empty and still works
+    d. [P] DeclarationSection may not exist, non declaration may not exist
+    e. [P] NonDeclaration Followed By DeclarationSection will cause syntax error
+    f. [P] Cannot declare function or procedure
+    g. [P] May call outside variable or function
+    h. [P] Variable declared inside is deallocated
+    i. [P]: Loop that contains For, If, Block, (decl Proc and Func should syntax error)
+    
+13. For
+    a. [P] Result or return kight be valid if block inside function or procedure, otherwise error
+    b. [P] May Have exit, exit should be boolean expr
+    c. [P] LoopScope May be empty and still works
+    d. [P] DeclarationSection may not exist, non declaration may not exist
+    e. [P] NonDeclaration Followed By DeclarationSection will cause syntax error
+    f. [P] Cannot declare function or procedure
+    g. [P] Numbers between .. should be integer expression and const and not error, if fail still insert to symbol table for duplicity checking in function scope
+    h. [P] compare whether decreasing is correct or not. If Not correct, the identifier in the initialization of the For is not inserted to symbol table. if fail still insert to symbol table for duplicity checking in function scope
+    i. [P] May call outside variable or function
+    j. [P] Variable declared inside is deallocated once finished
+    k. [P]: For that contains Loop, If, Block, (decl Proc and Func should syntax error)
+    l. [P+]: Identifier declared together with for is const, changing its value will be an error
+
+14. If
+    a. [P] Try the following If inside If __ Else. If Else inside If __ Else, If inside If Else ___, If Else inside If Else __.
+    b. [P] May call outside variable or function
+    c. [P] Variable declared inside is deallocated once finished
+    d. [P]: If that contains For, Loop, Block, (decl Proc and Func should syntax error)
+    e. [P]: Result or return kight be valid if if inside function or procedure, otherwise error
+    f. [P]: Exit might be valid if if inside loop or for, otherwise error
+    g. [P]: If with contents NonDeclarationSection followed by DeclarationSection will cause error
+    h. [P]: If may be empty and still works 
+    i. [P]: If declaration section may be empty, non declaration section may be empty
+    j. [P]: The expression for if should be boolean
+
+15. Block:
+    a. [P]: May Declare function and procedure also
+    b. [P]: Variable and function declared inside is deallocated once finished
+    c. [P]: Block contains For, Loop, Block, decl of Proc and decl of Func 
+    d. [P]: Result or return might be valid if block inside function or procedure, otherwise error
+    e. [P]: Exit might be valid if if inside loop or for, otherwise error
+    f. [P]: Block declaration section may be empty, non declaration section may be empty
+    g. [P]: Block with contents NonDeclarationSection followed by DeclarationSection will cause error
+    h. [P]: Block may be empty and still works 

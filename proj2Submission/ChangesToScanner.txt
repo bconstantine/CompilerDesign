@@ -1,0 +1,31 @@
+# Changes I Made to Scanner: 
+- After printf token, also add return token (token name is same with the one in yacc)
+- Rename numerical const and string const from STRING INT REAL TO STRINGCONST INTCONST REALCONST due to duplicate token with keyword
+- I change ID token to IDENTIFIER for better readability
+- I use fake yylval before, now I erase this fake yylval, but I still need the temporary string buffer, so I made tempStrBuf
+- I need to change the BEGIN keyword to BEGINKWD as later on the lex.yy.c gets confused because BEGIN is also used for changing state in lex (previously is okay because we have no return)
+- I need to change STRING state to STRING_STATE for the same reason (duplicate with STRING keyword)
+- Symbol table operation when meeting identifier changes. Now I will put to yylval the index of the symbol table entry searched from the last scope, additionally I also pass the identifier name to yacc because I won't do symbol table insertion in Lex
+- To stringify a defined constant token, I add # in printf. Reference:  https://stackoverflow.com/questions/12844117/printing-defined-constants*/
+- Linenumber now is split into two variables (a bit more complex rather than project 1), due to the reason that YACC only reduce if it founds a token that is sure not to affect the current rule,
+  if I dont split two variables (which means every newline I will just append the yacc linenum), all the error message linenum will be more than it should be
+  -- linenum: global variable, define in commonDataStructure.h, this will be line number that lex and yacc communicate with. Not immediately incremented when meet newline
+  -- LexLineNum: line number exclusively for lex. when meeting newline in lex, this will always be incremented
+  -- They works as follows, define a linenumState variable which value can be 0 - 2:
+    --- value 0: Normal, LexLineNum and linenum is sync
+    --- value 1: Lex meets new line, which will makes LexLineNum incremented, means LexLineNum > linenum
+    --- value 2: Lex meets another token that returned to the YACC after meeting newline (during this state and a rule is reduced, it should be reduced during this time)
+    ---Based on the state, each action are as follows:
+      ---- If current rule in Lex will return a token to YACC: 
+        ----- Do a preprocess on the state of the linenum.
+          ------ If it is already 2, that means previously it has meet another token in this line, so sync linenum = LexLineNum, and set state =0
+          ------ If linenumState = 1, that means lex previously haven't return token to YACC after meet newline, that means set the linenumState to 2
+        ----- After finish doing all the operations of the rule, postprocess the state with apply checking of the second condition of preprocess, just to make sure that state is correct
+      ---- When meeting a newline in a noncomment section (MODIFYLINENUMREGULAR)
+        ----- Append LexLineNum,
+          ------ If current state is 0, set it to 1
+          ------ If current state is 1, left unchanged
+          ------ If current state is 2, change state to 1, and set linenum with LexLineNum - 1 (because we need to prepare the next return evaluate the recent token before meeting newline)
+      ---- When meeting a newline in a comment section (MODIFYLINENUMCOMMENT)
+        ----- Append LexLineNum. Since comment has nothing to return to YACC, only needs to consider if meeting newline, which must set state from 0 to 1. Otherwise do not change any of the state
+      ---- If current state is 2, and lex meets another token that will be returned to YACC, change state to 0 and sync linenum = LexLineNum 
